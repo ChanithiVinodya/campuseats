@@ -25,7 +25,8 @@ function App() {
 
   return (
     <div style={{ maxWidth: 480, margin: "40px auto", fontFamily: "sans-serif" }}>
-      <h1>🍽️ CampusEats — Today's Menu</h1>
+      <h1>🍽️ CampusEats</h1>
+      <h2>Today's Menu</h2>
       <p style={{ fontSize: 12, color: "#888" }}>API: {API || "not set"}</p>
 
       {status === "loading" && <p>Loading menu… (the free API may take up to 60s to wake up)</p>}
