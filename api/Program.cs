@@ -6,12 +6,34 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
-// CORS: allowed frontend origin comes from Cors__AllowedOrigin (env var)
-var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:5173";
+// CORS: allow configured origins (e.g. Vercel) and localhost for testing
+var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"];
+var origins = (allowedOrigin ?? "")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(o => o.AddPolicy("Frontend", p =>
-    p.WithOrigins(allowedOrigin)
-     .AllowAnyHeader()
-     .AllowAnyMethod()));
+{
+    if (origins.Length > 0)
+    {
+        p.WithOrigins(origins);
+    }
+
+    p.SetIsOriginAllowed(origin =>
+    {
+        if (string.IsNullOrEmpty(origin)) return false;
+        try
+        {
+            var uri = new Uri(origin);
+            return uri.Host is "localhost" or "127.0.0.1";
+        }
+        catch
+        {
+            return false;
+        }
+    })
+    .AllowAnyHeader()
+    .AllowAnyMethod();
+}));
 
 var app = builder.Build();
 
